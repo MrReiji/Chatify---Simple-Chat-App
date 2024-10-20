@@ -1,7 +1,14 @@
+import 'dart:io';
+import 'package:chatify/blocs/auth/register_form_bloc.dart';
 import 'package:chatify/constants/constants.dart';
 import 'package:chatify/design_widgets/buttons/primary_button.dart';
+import 'package:chatify/design_widgets/dialogs/loading_dialog.dart';
+import 'package:chatify/design_widgets/fields/input_widget.dart';
+import 'package:chatify/design_widgets/fields/user_image_picker.dart';
 import 'package:chatify/screens/login_screen.dart';
+import 'package:chatify/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,168 +18,165 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // Placeholder for the selected profile image
-  String? profileImagePath;
+  File? _selectedImage;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(flex: 2),
-              Text(
-                "Join Chatify Today!",
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 28,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding),
-              Text(
-                "Create an account to connect with friends and explore new conversations.",
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                  color: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .color,
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding * 2),
+    return BlocProvider(
+      create: (context) => RegisterFormBloc(),
+      child: Builder(
+        builder: (context) {
+          final registerFormBloc = context.read<RegisterFormBloc>();
 
-              // Profile picture selection area
-              GestureDetector(
-                onTap: () {
-                  // Open image picker to select profile picture (implement image picker functionality)
-                  // setState(() => profileImagePath = 'path_to_image');
-                },
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey.withOpacity(0.2),
-                  backgroundImage: profileImagePath != null
-                      ? AssetImage(profileImagePath!)
-                      : null,
-                  child: profileImagePath == null
-                      ? Icon(Icons.add_a_photo, size: 40, color: Colors.grey.withOpacity(0.7))
-                      : null,
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding),
-
-              // Nickname input field
-              TextField(
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.person, color: Colors.grey.withOpacity(0.7)),
-                  hintText: "Username",
-                  hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
-                  filled: true,
-                  fillColor: Colors.grey.withOpacity(0.2),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding),
-
-              // Email input field
-              TextField(
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.email, color: Colors.grey.withOpacity(0.7)),
-                  hintText: "Email",
-                  hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
-                  filled: true,
-                  fillColor: Colors.grey.withOpacity(0.2),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding),
-
-              // Password input field
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey.withOpacity(0.7)),
-                  hintText: "Password",
-                  hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
-                  filled: true,
-                  fillColor: Colors.grey.withOpacity(0.2),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding),
-
-              // Confirm Password input field
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey.withOpacity(0.7)),
-                  hintText: "Confirm Password",
-                  hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
-                  filled: true,
-                  fillColor: Colors.grey.withOpacity(0.2),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: kDefaultPadding * 2),
-
-              // Sign Up button
-              PrimaryButton(
-                text: "Create Account",
-                press: () {
-                  // Implement sign-up action
-                },
-              ),
-              const SizedBox(height: kDefaultPadding * 2),
-
-              // Already have an account? Go back to Sign In screen
-              TextButton(
-                 onPressed: () => Navigator.push(
+          return Scaffold(
+            resizeToAvoidBottomInset: true,
+            body: FormBlocListener<RegisterFormBloc, String, String>(
+              onSubmitting: (context, state) {
+                LoadingDialog.show(context);
+              },
+              onSubmissionFailed: (context, state) {
+                LoadingDialog.hide(context);
+              },
+              onSuccess: (context, state) {
+                LoadingDialog.hide(context);
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const LoginScreen(),
+                    builder: (context) => const WelcomeScreen(),
                   ),
-                ),
-                child: RichText(
-                  text: TextSpan(
-                    text: "Already have an account? ",
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.color,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: "Sign In",
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.secondary,
+                );
+              },
+              onFailure: (context, state) {
+                LoadingDialog.hide(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.failureResponse!)),
+                );
+              },
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: kDefaultPadding),
+                        Text(
+                          "Join Chatify Today!",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: kDefaultPadding),
+                        Text(
+                          "Create an account to connect with friends and explore new conversations.",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                color: Theme.of(context).textTheme.bodyLarge!.color,
+                              ),
+                        ),
+                        const SizedBox(height: kDefaultPadding),
+
+                        // Profile picture selection
+                        UserImagePicker(
+                          onPickImage: (pickedImage) {
+                            _selectedImage = pickedImage;
+                          },
+                        ),
+
+                        const SizedBox(height: kDefaultPadding/2),
+
+                        // Username input field
+                        InputWidget(
+                          hintText: "Username",
+                          prefixIcon: Icons.person,
+                          fieldBloc: registerFormBloc.username,
+                          autofillHints: const [AutofillHints.newUsername],
+                        ),
+
+                        // Email input field
+                        InputWidget(
+                          hintText: "Email",
+                          prefixIcon: Icons.email,
+                          textInputType: TextInputType.emailAddress,
+                          fieldBloc: registerFormBloc.email,
+                          autofillHints: const [AutofillHints.email],
+                        ),
+
+                        // Password input field
+                        InputWidget(
+                          hintText: "Password",
+                          prefixIcon: Icons.lock,
+                          obscureText: true,
+                          textInputType: TextInputType.visiblePassword,
+                          fieldBloc: registerFormBloc.password,
+                          autofillHints: const [AutofillHints.newPassword],
+                        ),
+
+                        // Confirm Password input field
+                        InputWidget(
+                          hintText: "Confirm Password",
+                          prefixIcon: Icons.lock,
+                          obscureText: true,
+                          textInputType: TextInputType.visiblePassword,
+                          fieldBloc: registerFormBloc.confirmPassword,
+                          autofillHints: const [AutofillHints.newPassword],
+                        ),
+
+                        const SizedBox(height: kDefaultPadding),
+
+                        // Create Account button
+                        PrimaryButton(
+                          text: "Create Account",
+                          press: () {
+                            if (_selectedImage != null) {
+                              registerFormBloc.submit();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Please select a profile image!")),
+                              );
+                            }
+                          },
+                        ),
+
+                        const SizedBox(height: kDefaultPadding),
+
+                        // Already have an account? Go back to Sign In screen
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          ),
+                          child: RichText(
+                            text: TextSpan(
+                              text: "Already have an account? ",
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                    color: Theme.of(context).textTheme.headlineSmall?.color,
+                                  ),
+                              children: [
+                                TextSpan(
+                                  text: "Sign In",
+                                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const Spacer(flex: 2),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

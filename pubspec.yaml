@@ -36,6 +36,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
+  flutter_form_bloc:
+    git:
+      url: https://github.com/Cavin6080/form_bloc.git
+      path: packages/flutter_form_bloc
+  internet_connection_checker_plus: ^2.5.2
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
