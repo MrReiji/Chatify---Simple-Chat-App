@@ -1,4 +1,5 @@
-import 'package:chatify/screens/constants/constants.dart';
+import 'package:chatify/screens/login_screen.dart';
+import 'package:chatify/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -60,7 +61,7 @@ class WelcomeScreen extends StatelessWidget {
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const WelcomeScreen(),
+                    builder: (context) => const LoginScreen(),
                   ),
                 ),
                 child: Row(
