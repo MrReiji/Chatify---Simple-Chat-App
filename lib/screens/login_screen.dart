@@ -1,13 +1,16 @@
 import 'package:chatify/blocs/auth/login_form_bloc.dart';
-import 'package:chatify/design_widgets/buttons/primary_button.dart';
 import 'package:chatify/constants/constants.dart';
+import 'package:chatify/design_widgets/buttons/primary_button.dart';
 import 'package:chatify/design_widgets/dialogs/loading_dialog.dart';
 import 'package:chatify/design_widgets/fields/input_widget.dart';
+import 'package:chatify/screens/chats_screen.dart';
 import 'package:chatify/screens/register_screen.dart';
 import 'package:chatify/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 
+/// The `LoginScreen` widget provides a user interface for users to sign in to their accounts.
+/// It uses `flutter_form_bloc` for form state management and validation.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -18,8 +21,9 @@ class LoginScreen extends StatelessWidget {
       child: Builder(
         builder: (context) {
           final loginFormBloc = context.read<LoginFormBloc>();
+
           return Scaffold(
-            resizeToAvoidBottomInset: true, // Pozwala na automatyczne dostosowanie się widoku do klawiatury
+            resizeToAvoidBottomInset: true,
             body: FormBlocListener<LoginFormBloc, String, String>(
               onSubmitting: (context, state) {
                 LoadingDialog.show(context);
@@ -32,42 +36,50 @@ class LoginScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const WelcomeScreen(),
+                    builder: (context) => const ChatsScreen(),
                   ),
                 );
               },
               onFailure: (context, state) {
                 LoadingDialog.hide(context);
-
                 ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.failureResponse!)));
+                  SnackBar(content: Text(state.failureResponse!)),
+                );
               },
               child: SafeArea(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: kDefaultPadding), // Odstęp od góry zamiast Spacer
+                        const SizedBox(height: kDefaultPadding),
+                        // App logo centered at the top.
                         Center(
                           child: Image.asset(
                             "assets/images/logo.png",
                             scale: 4,
                           ),
                         ),
-                        const SizedBox(height: kDefaultPadding * 2), // Zamiast Spacer dla lepszej kontroli odstępów
+                        const SizedBox(height: kDefaultPadding),
+                        // Heading text.
                         Text(
                           "Sign in to your account",
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge!
+                              .copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).textTheme.headlineSmall?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.color,
                               ),
                         ),
                         const SizedBox(height: kDefaultPadding),
-
-                        // InputWidget dla emaila
+                        // Email input field.
                         InputWidget(
                           hintText: "Email",
                           prefixIcon: Icons.email_outlined,
@@ -75,8 +87,7 @@ class LoginScreen extends StatelessWidget {
                           autofillHints: const [AutofillHints.email],
                           fieldBloc: loginFormBloc.email,
                         ),
-
-                        // InputWidget dla hasła
+                        // Password input field.
                         InputWidget(
                           hintText: "Password",
                           prefixIcon: Icons.lock_outlined,
@@ -86,22 +97,27 @@ class LoginScreen extends StatelessWidget {
                           fieldBloc: loginFormBloc.password,
                         ),
                         const SizedBox(height: kDefaultPadding),
-
+                        // Sign In button.
                         PrimaryButton(
                           text: "Sign In",
                           press: () => loginFormBloc.submit(),
                         ),
                         const SizedBox(height: kDefaultPadding * 2),
-
+                        // Navigation to the Register screen.
                         TextButton(
                           onPressed: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => const RegisterScreen(),
+                            ),
                           ),
                           child: RichText(
                             text: TextSpan(
                               text: "Don't have an account? ",
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
                                     color: Theme.of(context)
                                         .textTheme
                                         .headlineSmall
@@ -110,16 +126,21 @@ class LoginScreen extends StatelessWidget {
                               children: [
                                 TextSpan(
                                   text: "Sign Up",
-                                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).colorScheme.secondary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                       ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: kDefaultPadding * 2), // Zamiast Spacer dla lepszej kontroli odstępów
+                        const SizedBox(height: kDefaultPadding * 2),
                       ],
                     ),
                   ),

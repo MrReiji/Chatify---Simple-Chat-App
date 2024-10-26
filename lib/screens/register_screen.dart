@@ -5,6 +5,7 @@ import 'package:chatify/design_widgets/buttons/primary_button.dart';
 import 'package:chatify/design_widgets/dialogs/loading_dialog.dart';
 import 'package:chatify/design_widgets/fields/input_widget.dart';
 import 'package:chatify/design_widgets/fields/user_image_picker.dart';
+import 'package:chatify/screens/chats_screen.dart';
 import 'package:chatify/screens/login_screen.dart';
 import 'package:chatify/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,6 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  File? _selectedImage;
 
   @override
   Widget build(BuildContext context) {
@@ -32,21 +32,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
             resizeToAvoidBottomInset: true,
             body: FormBlocListener<RegisterFormBloc, String, String>(
               onSubmitting: (context, state) {
+                debugPrint('Form is submitting...');
                 LoadingDialog.show(context);
               },
               onSubmissionFailed: (context, state) {
+                debugPrint('Form submission failed.');
                 LoadingDialog.hide(context);
               },
               onSuccess: (context, state) {
+                debugPrint('Form submitted successfully.');
                 LoadingDialog.hide(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const WelcomeScreen(),
+                    builder: (context) => const ChatsScreen(),
                   ),
                 );
               },
               onFailure: (context, state) {
+                debugPrint('Form submission failed: ${state.failureResponse}');
                 LoadingDialog.hide(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.failureResponse!)),
@@ -82,11 +86,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         // Profile picture selection
                         UserImagePicker(
                           onPickImage: (pickedImage) {
-                            _selectedImage = pickedImage;
+                            debugPrint('Image picked: ${pickedImage.path}');
+                            registerFormBloc.selectedImage = pickedImage;
                           },
                         ),
 
-                        const SizedBox(height: kDefaultPadding/2),
+                        const SizedBox(height: kDefaultPadding / 2),
 
                         // Username input field
                         InputWidget(
@@ -131,13 +136,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         PrimaryButton(
                           text: "Create Account",
                           press: () {
-                            if (_selectedImage != null) {
-                              registerFormBloc.submit();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Please select a profile image!")),
-                              );
-                            }
+                            debugPrint('Create Account button pressed.');
+                            registerFormBloc.submit();
                           },
                         ),
 
@@ -145,12 +145,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         // Already have an account? Go back to Sign In screen
                         TextButton(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                          ),
+                          onPressed: () {
+                            debugPrint('Navigating to LoginScreen.');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
                           child: RichText(
                             text: TextSpan(
                               text: "Already have an account? ",
