@@ -10,4 +10,4 @@ const kIvoryWhite = Color(0xFFFFFFF0); // Soft white for background
 
 
 // Default padding used throughout the UI for consistent spacing
-const kDefaultPadding = 20.0;
+const kDefaultPadding = 18.0;
