@@ -1,9 +1,9 @@
-// lib/screens/chats/chats_screen.dart
+import 'package:chatify/design_widgets/chats/body.dart';
 import 'package:chatify/screens/group_creation_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:chatify/constants/constants.dart';
-import 'package:chatify/design_widgets/chats/body.dart';
-import 'package:chatify/utils/user_service.dart'; // Import function
+import 'package:chatify/utils/user_service.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -82,19 +82,19 @@ class _ChatsScreenState extends State<ChatsScreen> {
           size: 28,
         ),
       ),
-      bottomNavigationBar: buildBottomNavigationBar(),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
-  BottomNavigationBar buildBottomNavigationBar() {
+  BottomNavigationBar _buildBottomNavigationBar() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
       currentIndex: _selectedIndex,
       onTap: (value) {
         setState(() {
           _selectedIndex = value;
-          // TODO: Update the screen based on the selected index
         });
+        // TODO: Handle navigation based on selected index
       },
       items: [
         const BottomNavigationBarItem(

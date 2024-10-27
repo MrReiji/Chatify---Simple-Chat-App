@@ -1,94 +1,145 @@
 import 'package:flutter/material.dart';
-import 'package:chatify/constants/constants.dart';
-import '../../../models/chat.dart';
+import 'package:intl/intl.dart';
+import '../../../constants/constants.dart';
+import '../../screens/conversation_screen.dart';
 
 class ChatCard extends StatelessWidget {
-  const ChatCard({
-    super.key,
-    required this.chat,
-    required this.press,
-  });
+  final String groupId;
+  final String groupName;
+  final String groupImageUrl;
+  final String lastMessage;
+  final DateTime lastMessageTimestamp;
 
-  final Chat chat;
-  final VoidCallback press;
+  const ChatCard({
+    Key? key,
+    required this.groupId,
+    required this.groupName,
+    required this.groupImageUrl,
+    required this.lastMessage,
+    required this.lastMessageTimestamp,
+  }) : super(key: key);
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final isToday = now.day == timestamp.day &&
+        now.month == timestamp.month &&
+        now.year == timestamp.year;
+
+    if (isToday) {
+      return DateFormat.Hm().format(timestamp);
+    } else if (now.difference(timestamp).inDays < 7) {
+      return DateFormat.E().format(timestamp);
+    } else {
+      return DateFormat.yMd().format(timestamp);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: press,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: kDefaultPadding,
-          vertical: kDefaultPadding * 0.75,
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF1F1F2A) : kIvoryWhite,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            if (!isDarkMode)
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
-        child: Row(
-          children: [
-            GroupAvatar(images: chat.groupImages),
-            Expanded(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          splashColor: kPrimaryColor.withOpacity(0.2),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ConversationScreen(
+                  chatId: groupId,
+                  groupName: groupName,
+                  groupImageUrl: groupImageUrl,
+                ),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Obraz grupy
+                CircleAvatar(
+                  radius: 32,
+                  backgroundImage: groupImageUrl.isNotEmpty
+                      ? NetworkImage(groupImageUrl)
+                      : const AssetImage("assets/images/noGroupImg.png")
+                          as ImageProvider,
+                  backgroundColor: kSecondaryColor.withOpacity(0.2),
+                ),
+                const SizedBox(width: 16),
+                // Informacje o czacie
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Nazwa grupy
+                      Text(
+                        groupName,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : kPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Treść ostatniej wiadomości
+                      Text(
+                        lastMessage,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDarkMode
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600,
+                          fontStyle: lastMessage == "No messages yet"
+                              ? FontStyle.italic
+                              : FontStyle.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Znacznik czasu
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      chat.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                      _formatTimestamp(lastMessageTimestamp),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDarkMode
+                            ? Colors.grey.shade500
+                            : Colors.grey.shade600,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Opacity(
-                      opacity: 0.64,
-                      child: Text(
-                        chat.lastMessage,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: kPrimaryColor,
+                      size: 16,
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
-            Opacity(
-              opacity: 0.64,
-              child: Text(chat.time),
-            ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class GroupAvatar extends StatelessWidget {
-  const GroupAvatar({
-    super.key,
-    required this.images,
-  });
-
-  final List<String> images;
-
-  @override
-  Widget build(BuildContext context) {
-    const double size = 48;
-    const double overlap = 16;
-    return SizedBox(
-      width: size + (images.length - 1) * (size - overlap),
-      height: size,
-      child: Stack(
-        children: images.asMap().entries.map((entry) {
-          int idx = entry.key;
-          String image = entry.value;
-          return Positioned(
-            left: idx * (size - overlap),
-            child: CircleAvatar(
-              radius: size / 2,
-              backgroundImage: AssetImage(image),
-            ),
-          );
-        }).toList(),
       ),
     );
   }
