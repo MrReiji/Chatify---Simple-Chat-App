@@ -1,5 +1,6 @@
 import 'package:chatify/design_widgets/chats/body.dart';
 import 'package:chatify/screens/group_creation_screen.dart';
+import 'package:chatify/screens/settings_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:chatify/constants/constants.dart';
@@ -15,6 +16,9 @@ class ChatsScreen extends StatefulWidget {
 class _ChatsScreenState extends State<ChatsScreen> {
   int _selectedIndex = 0;
   String? profileImageUrl;
+  String searchQuery = '';
+  bool _isSearching = false; // Do obsługi animowanego przejścia wyszukiwania
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -33,56 +37,92 @@ class _ChatsScreenState extends State<ChatsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Group Chats",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: kPrimaryColor,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search functionality
-            },
+  backgroundColor: kPrimaryColor,
+  automaticallyImplyLeading: false,
+  title: Padding(
+    padding: EdgeInsets.only(
+      left: 8,
+      right: 8,
+    ),
+    child: _isSearching
+        ? _buildSearchField()
+        : Text(
+            _selectedIndex == 0 ? "Group Chats" : "Settings",
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // TODO: Navigate to settings screen
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GestureDetector(
-              onTap: () {
-                // TODO: Navigate to user profile
-              },
-              child: CircleAvatar(
-                backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                    ? NetworkImage(profileImageUrl!)
-                    : const AssetImage("assets/images/noProfileImg.png") as ImageProvider,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: const Body(),
-      floatingActionButton: FloatingActionButton(
+  ),
+  actions: [
+    if (_selectedIndex == 0) ...[
+      IconButton(
+        icon: Icon(_isSearching ? Icons.close : Icons.search),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const GroupCreationScreen()),
-          );
+          setState(() {
+            _isSearching = !_isSearching;
+            if (!_isSearching) {
+              _searchController.clear();
+              searchQuery = '';
+            }
+          });
         },
-        backgroundColor: kPrimaryColor,
-        child: const Icon(
-          Icons.group_add,
-          color: Colors.white,
-          size: 28,
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedIndex = 1;
+            });
+          },
+          child: CircleAvatar(
+            backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
+                ? NetworkImage(profileImageUrl!)
+                : const AssetImage("assets/images/noProfileImg.png") as ImageProvider,
+          ),
         ),
       ),
+    ],
+  ],
+),
+
+      body: _selectedIndex == 0
+          ? Body(searchQuery: searchQuery)
+          : const SettingsScreen(),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GroupCreationScreen()),
+                );
+              },
+              backgroundColor: kPrimaryColor,
+              child: const Icon(
+                Icons.group_add,
+                color: Colors.white,
+                size: 28,
+              ),
+            )
+          : null,
       bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      autofocus: true,
+      onChanged: (value) {
+        setState(() {
+          searchQuery = value.toLowerCase();
+        });
+      },
+      decoration: InputDecoration(
+        hintText: 'Search chats...',
+        hintStyle: const TextStyle(color: Colors.white70),
+        border: InputBorder.none,
+      ),
+      style: const TextStyle(color: Colors.white),
+      cursorColor: Colors.white,
     );
   }
 
@@ -94,29 +134,15 @@ class _ChatsScreenState extends State<ChatsScreen> {
         setState(() {
           _selectedIndex = value;
         });
-        // TODO: Handle navigation based on selected index
       },
-      items: [
-        const BottomNavigationBarItem(
+      items: const [
+        BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble_outline),
           label: "Chats",
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.people_outline),
-          label: "People",
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.call),
-          label: "Calls",
-        ),
         BottomNavigationBarItem(
-          icon: CircleAvatar(
-            radius: 14,
-            backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                ? NetworkImage(profileImageUrl!)
-                : const AssetImage("assets/images/noProfileImg.png") as ImageProvider,
-          ),
-          label: "Profile",
+          icon: Icon(Icons.settings),
+          label: "Settings",
         ),
       ],
     );

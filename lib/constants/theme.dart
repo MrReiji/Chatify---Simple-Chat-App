@@ -34,7 +34,7 @@ ThemeData darkThemeData(BuildContext context) {
     appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0, backgroundColor: Color(0xFF2A2A35)),
     iconTheme: const IconThemeData(color: kContentColorDarkTheme), // Icons follow dark theme text color
     textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
-        .apply(bodyColor: kContentColorDarkTheme), // Google Font for text, applying the dark theme color
+        .apply(displayColor: kContentColorDarkTheme, bodyColor: kContentColorDarkTheme), // Google Font for text, applying the dark theme color
     colorScheme: const ColorScheme.dark().copyWith(
       primary: kPrimaryColor,
       secondary: kSecondaryColor,

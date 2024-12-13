@@ -1,3 +1,4 @@
+import 'package:chatify/utils/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:chatify/constants/constants.dart';
@@ -30,23 +31,25 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
             ),
             body: FormBlocListener<GroupCreationFormBloc, String, String>(
               onSubmitting: (context, state) => LoadingDialog.show(context),
-              onSubmissionFailed: (context, state) =>
-                  LoadingDialog.hide(context),
-              onSuccess: (context, state) {
+              onSubmissionFailed: (context, state) => LoadingDialog.hide(context),
+              onSuccess: (context, state) async {
                 LoadingDialog.hide(context);
-                Navigator.pop(context, true); // Go back on success
+                final groupId = state.successResponse; // Zakładam, że zwraca ID grupy
+                await subscribeToChatTopic(groupId!); // Subskrypcja na temat po utworzeniu grupy
+                Navigator.pop(context, true); // Powrót na ekran poprzedni po utworzeniu
               },
               onFailure: (context, state) {
                 LoadingDialog.hide(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.failureResponse!)),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.failureResponse!)),
+                  );
+                }
               },
               child: SafeArea(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                    padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -54,10 +57,7 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                         Text(
                           "Create a New Group",
                           textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge!
-                              .copyWith(
+                          style: Theme.of(context).textTheme.titleLarge!.copyWith(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 24,
                                 color: Theme.of(context).colorScheme.secondary,
@@ -81,43 +81,29 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                         ),
 
                         // Dynamic participants fields
-                        BlocBuilder<ListFieldBloc<TextFieldBloc, dynamic>,
-                            ListFieldBlocState<TextFieldBloc, dynamic>>(
+                        BlocBuilder<ListFieldBloc<TextFieldBloc, dynamic>, ListFieldBlocState<TextFieldBloc, dynamic>>(
                           bloc: groupCreationFormBloc.participants,
                           builder: (context, state) {
                             return Column(
                               children: [
-                                for (int i = 0;
-                                    i < state.fieldBlocs.length;
-                                    i++)
+                                for (int i = 0; i < state.fieldBlocs.length; i++)
                                   InputWidget(
                                     hintText: "Participant ${i + 1}",
                                     prefixIcon: Icons.person,
                                     suffixIcon: Icons.cancel,
                                     onSuffixIconPressed: () {
-                                      groupCreationFormBloc
-                                          .removeParticipant(i);
+                                      groupCreationFormBloc.removeParticipant(i);
                                     },
                                     fieldBloc: state.fieldBlocs[i],
                                   ),
-
-                                // Centered "Add Another Participant" button
                                 Align(
                                   alignment: Alignment.center,
                                   child: TextButton.icon(
-                                    onPressed:
-                                        groupCreationFormBloc.addParticipant,
-                                    icon: Icon(Icons.add,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary),
+                                    onPressed: groupCreationFormBloc.addParticipant,
+                                    icon: Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
                                     label: Text(
                                       "Add Another Participant",
-                                      style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                      ),
+                                      style: TextStyle(color: Theme.of(context).colorScheme.primary),
                                     ),
                                   ),
                                 ),
@@ -142,5 +128,10 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
         },
       ),
     );
+  }
+
+  Future<void> subscribeToChatTopic(String groupId) async {
+    NotificationService().subscribeToTopic('group_$groupId');
+    debugPrint('Subscribed to topic: group_$groupId');
   }
 }

@@ -18,38 +18,34 @@ class ConversationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: AppBar(
+    automaticallyImplyLeading: false,
+    title: Row(
+      children: [
+        const BackButton(),
+        CircleAvatar(
+          radius: 22, // Zwiększ rozmiar, by awatar był bardziej wyrazisty
+          backgroundImage: groupImageUrl.isNotEmpty
+              ? NetworkImage(groupImageUrl)
+              : const AssetImage("assets/images/noProfileImg.png")
+                  as ImageProvider,
+        ),
+        const SizedBox(width: kDefaultPadding),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              groupName,
+              style: Theme.of(context).textTheme.titleLarge, // Zastosowanie większego rozmiaru tekstu
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
       body: Body(chatId: chatId),
     );
   }
 
-  AppBar buildAppBar() {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      title: Row(
-        children: [
-          const BackButton(),
-          CircleAvatar(
-            backgroundImage: groupImageUrl.isNotEmpty
-                ? NetworkImage(groupImageUrl)
-                : const AssetImage("assets/images/noProfileImg.png")
-                    as ImageProvider,
-          ),
-          const SizedBox(width: kDefaultPadding * 0.75),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                groupName,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ],
-          )
-        ],
-      ),
-      actions: [
-        const SizedBox(width: kDefaultPadding / 2),
-      ],
-    );
-  }
+
 }

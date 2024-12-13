@@ -7,14 +7,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
+/// Singleton instance of FirebaseAuth used for authentication operations.
 final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-/// Custom exception thrown when no image is selected.
+/// Custom exception that is thrown when no image is selected during registration.
 class SelectedImageIsNullException implements Exception {}
 
+/// A form bloc that handles user registration functionality.
+///
+/// This class manages:
+/// - Input validation for `email`, `password`, `confirmPassword`, and `username` fields.
+/// - Checking for internet connectivity before proceeding with registration.
+/// - Creating a new user account in Firebase Authentication.
+/// - Uploading the user's profile image to Firebase Storage.
+/// - Storing user data in Firestore.
 class RegisterFormBloc extends FormBloc<String, String> {
+  /// The image file selected by the user for their profile picture.
   File? selectedImage;
 
+  /// Bloc for the email input field.
+  /// 
+  /// Validators:
+  /// - `required`: Ensures the field is not empty.
+  /// - `email`: Validates the format of the entered email.
   final email = TextFieldBloc(
     validators: [
       FieldBlocValidators.required,
@@ -22,6 +37,11 @@ class RegisterFormBloc extends FormBloc<String, String> {
     ],
   );
 
+  /// Bloc for the password input field.
+  /// 
+  /// Validators:
+  /// - `required`: Ensures the field is not empty.
+  /// - `passwordMin6Chars`: Ensures the password has a minimum length of 6 characters.
   final password = TextFieldBloc(
     validators: [
       FieldBlocValidators.required,
@@ -29,6 +49,12 @@ class RegisterFormBloc extends FormBloc<String, String> {
     ],
   );
 
+  /// Bloc for the confirm password input field.
+  /// 
+  /// Validators:
+  /// - `required`: Ensures the field is not empty.
+  /// - `passwordMin6Chars`: Ensures the password has a minimum length of 6 characters.
+  /// - Ensures the value matches the `password` field value.
   final confirmPassword = TextFieldBloc(
     validators: [
       FieldBlocValidators.required,
@@ -36,12 +62,19 @@ class RegisterFormBloc extends FormBloc<String, String> {
     ],
   );
 
+  /// Bloc for the username input field.
+  /// 
+  /// Validators:
+  /// - `required`: Ensures the field is not empty.
   final username = TextFieldBloc(
     validators: [
       FieldBlocValidators.required,
     ],
   );
 
+  /// Constructor for `RegisterFormBloc`.
+  ///
+  /// Initializes the form blocs and adds a validator to ensure `confirmPassword` matches `password`.
   RegisterFormBloc() {
     addFieldBlocs(
       fieldBlocs: [
@@ -58,6 +91,15 @@ class RegisterFormBloc extends FormBloc<String, String> {
       ..subscribeToFieldBlocs([password]);
   }
 
+  /// Handles the form submission process.
+  ///
+  /// This method:
+  /// 1. Validates if a profile image has been selected.
+  /// 2. Checks internet connectivity before proceeding.
+  /// 3. Creates a new user account in Firebase Authentication.
+  /// 4. Uploads the user's profile image to Firebase Storage.
+  /// 5. Stores the user's information (username, email, profile image URL) in Firestore.
+  /// 6. Emits a success or failure response based on the outcome.
   @override
   Future<void> onSubmitting() async {
     try {

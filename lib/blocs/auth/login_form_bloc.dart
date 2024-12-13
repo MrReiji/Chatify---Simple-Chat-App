@@ -2,15 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-// Singleton instance of FirebaseAuth used for authentication operations.
+/// Singleton instance of FirebaseAuth used for authentication operations.
 final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
 /// A form bloc that handles user login functionality.
-/// Manages the email and password fields, validates input,
-/// checks for internet connectivity, and performs sign-in using Firebase Authentication.
+/// 
+/// This class manages:
+/// - Input validation for email and password fields.
+/// - Checking for internet connectivity before proceeding with login.
+/// - Signing in users with Firebase Authentication.
+/// - Initializing Firebase Cloud Messaging for push notifications after successful login.
 class LoginFormBloc extends FormBloc<String, String> {
-  /// Bloc for the email input field, with validators for required field and proper email format.
+  /// Bloc for the email input field.
+  /// 
+  /// This field uses the following validators:
+  /// - `required`: Ensures the field is not empty.
+/// - `email`: Validates the format of the entered email.
   final TextFieldBloc email = TextFieldBloc(
     validators: [
       FieldBlocValidators.required,
@@ -18,7 +27,11 @@ class LoginFormBloc extends FormBloc<String, String> {
     ],
   );
 
-  /// Bloc for the password input field, with validators for required field and minimum length.
+  /// Bloc for the password input field.
+  /// 
+  /// This field uses the following validators:
+  /// - `required`: Ensures the field is not empty.
+/// - `passwordMin6Chars`: Ensures the password has a minimum length of 6 characters.
   final TextFieldBloc password = TextFieldBloc(
     validators: [
       FieldBlocValidators.required,
@@ -26,7 +39,9 @@ class LoginFormBloc extends FormBloc<String, String> {
     ],
   );
 
-  /// Initializes the form bloc by adding the email and password field blocs.
+  /// Constructor for `LoginFormBloc`.
+  /// 
+  /// Initializes the bloc by adding `email` and `password` field blocs to the form.
   LoginFormBloc() {
     addFieldBlocs(
       fieldBlocs: [
@@ -36,9 +51,14 @@ class LoginFormBloc extends FormBloc<String, String> {
     );
   }
 
-  /// Handles form submission.
-  /// Validates input, checks internet connectivity,
-  /// and attempts to sign in the user with Firebase Authentication.
+  /// Handles the form submission process.
+  /// 
+  /// This method:
+  /// - Validates the input fields (`email` and `password`).
+  /// - Checks for internet connectivity before attempting to log in.
+  /// - Uses Firebase Authentication to sign in the user with the provided credentials.
+  /// - Emits success or failure responses based on the outcome.
+  /// - Initializes Firebase Messaging to retrieve a push notification token upon successful login.
   @override
   Future<void> onSubmitting() async {
     debugPrint('Email: ${email.value}');
@@ -61,15 +81,23 @@ class LoginFormBloc extends FormBloc<String, String> {
         password: password.value,
       );
 
+      // Initialize Firebase Messaging token for push notifications.
+      FirebaseMessaging.instance.getToken().then((token) {
+        debugPrint("Firebase Messaging Token: $token");
+      });
+
       debugPrint(userCredentials.toString());
       debugPrint("Logged in successfully");
 
+      // Emit success response if login is successful.
       emitSuccess(successResponse: "You have logged in successfully!");
     } on FirebaseAuthException catch (_) {
+      // Handle specific Firebase authentication errors.
       emitFailure(
         failureResponse: "Invalid email or password. Please try again!",
       );
     } catch (error) {
+      // Handle any other unexpected errors.
       debugPrint(error.toString());
       emitFailure(failureResponse: "An unknown error occurred.");
     }
